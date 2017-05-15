@@ -1318,6 +1318,10 @@
         var tr = _.cloneTemplate('experiment-row-template').children[0];
         tableBodyNode.insertBefore(tr, addRowNode);
 
+        _.setDataProps(tr, 'tr button.deleteexp', 'expId', experiment.id);
+        _.setDataProps(tr, 'tr button.deleteexp', 'paperId', paper.id);
+        _.addEventListener(tr, 'tr button.deleteexp', 'click', deleteExp);
+
         _.fillEls(tr, '.paptitle', paper.title);
 
         // the "add a row" button needs to know what paper it's on
@@ -1440,6 +1444,9 @@
               td.classList.add('newcol');
             }
 
+            _.setDataProps(td, 'td button.deleteexp', 'expId', experiment.id);
+            _.setDataProps(td, 'td button.deleteexp', 'paperId', paper.id);
+            _.addEventListener(td, 'td button.deleteexp', 'click', deleteExp);
           } else {
             // computed column
             td.classList.add('computed');
@@ -2147,6 +2154,28 @@
       updateMetaanalysisView();
       setTimeout(focusFirstValidationError, 0);
     }
+  }
+
+  function deleteExp(e) {
+    var paperIndex = 0;
+    var expIndex;
+
+    for (paperIndex=0; paperIndex<currentMetaanalysis.papers.length; paperIndex++) {
+      if (currentMetaanalysis.papers[paperIndex].id === e.target.dataset.paperId) {
+        break;
+      }
+    }
+
+    for (expIndex=0; expIndex<currentMetaanalysis.papers[paperIndex].experiments.length; expIndex++) {
+       if (currentMetaanalysis.papers[paperIndex].experiments[expIndex].id === e.target.dataset.expId) {
+         break;
+       }
+    }
+
+    currentMetaanalysis.papers[paperIndex].experiments.splice(expIndex, 1);
+    unpinPopupBox();
+    updateMetaanalysisView();
+    _.scheduleSave(currentMetaanalysis);
   }
 
   function addPaperRow() {
